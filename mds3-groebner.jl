@@ -11,7 +11,7 @@ using Oscar;
 
 # our construction works over characteristic 7
 k = GF(7);
-K, (gamma,a1,a2,a3,a4,a5,a6) = PolynomialRing(k, ["x","a1","a2","a3","a4","a5","a6"], ordering=:degrevlex);
+K, (gamma,a1,a2,a3,a4,a5,a6) = polynomial_ring(k, ["x","a1","a2","a3","a4","a5","a6"]; internal_ordering=:degrevlex);
 
 # defining the Reed-Solomon generators
 
@@ -31,20 +31,20 @@ println()
 
 # building the ideal; recall we are modding out by gamma^3 - 2
 Il = [p[1] + 2*p[4], p[2], p[3]] 
-I = ideal(Il)
+I = ideal(K, Il)
 
 # compute the groebner basis
-G,m = groebner_basis_with_transformation_matrix(I, ordering=degrevlex(a), complete_reduction=true);
+G,m = groebner_basis_with_transformation_matrix(I, ordering=degrevlex(K), complete_reduction=true);
+#G,m = groebner_basis_with_transformation_matrix(I, ordering=degrevlex(a), complete_reduction=true);
 
 # generate the polynomial we seek to prove is in the ideal
 key = prod([a[i] - a[j] for i in 1:6 for j in 1:(i-1)])*(a1+a2+a3+a4+a5+a6);
 println("Checking if ", factor(key), " is in the ideal")
 
-# prove that key is in the ideal
-Q, r = divrem(key, G);
+Q, r = reduce_with_quotients(key, gens(G));
 println("Remainder: ", r); # should be 0
    
 # Optional: if you want to see the certificate for why key is in the ideal
-#for z in m*Q
+#for z in Q*transpose(m)
 #    println(factor(z))
 #end
